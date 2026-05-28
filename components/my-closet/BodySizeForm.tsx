@@ -43,7 +43,10 @@ export function BodySizeForm({ onSave, onCancel, initialValues }: BodySizeFormPr
     const size: BodySize = {};
     for (const f of FIELDS) {
       const v = values[f.key];
-      if (v?.trim()) size[f.key] = Number(v);
+      if (v?.trim()) {
+        const n = Number(v);
+        if (isFinite(n)) size[f.key] = n;
+      }
     }
     onSave(size);
   };

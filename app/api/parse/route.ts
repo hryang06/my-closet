@@ -32,11 +32,18 @@ export async function POST(request: Request) {
     return Response.json({ error: "url이 필요합니다." }, { status: 400 });
   }
 
+  let parsed: URL;
   try {
-    new URL(url);
+    parsed = new URL(url);
   } catch {
     return Response.json(
       { error: "유효하지 않은 URL입니다." },
+      { status: 400 }
+    );
+  }
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    return Response.json(
+      { error: "http/https URL만 지원합니다." },
       { status: 400 }
     );
   }
@@ -100,7 +107,14 @@ export async function POST(request: Request) {
 
     const geminiData = await geminiRes.json();
     const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-    productInfo = JSON.parse(text);
+    if (!text) {
+      return Response.json({ error: "AI가 응답하지 않았습니다." }, { status: 502 });
+    }
+    const parsed2 = JSON.parse(text);
+    if (!parsed2.name || !parsed2.brand) {
+      return Response.json({ error: "제품 정보를 파싱하지 못했습니다." }, { status: 502 });
+    }
+    productInfo = parsed2;
   } catch {
     return Response.json(
       { error: "제품 정보 파싱에 실패했습니다." },

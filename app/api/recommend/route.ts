@@ -33,9 +33,11 @@ ${sizeTableText}
 
 신체 사이즈: ${bodySizeText}
 
+중요: size 필드에는 위 사이즈 테이블의 label 값(예: S, M, L, XL)을 정확히 그대로 사용하라.
+
 JSON 형식으로만 반환 (다른 텍스트 없이):
 {
-  "size": "추천 사이즈 라벨 (예: M)",
+  "size": "추천 사이즈 라벨 (사이즈 테이블의 label과 동일하게)",
   "reason": "추천 이유 (2~3문장, 신체 사이즈와 제품 사이즈 수치를 근거로 포함)"
 }`;
 }
@@ -74,7 +76,13 @@ export async function POST(request: Request) {
 
     const geminiData = await geminiRes.json();
     const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      return Response.json({ error: "AI가 응답하지 않았습니다." }, { status: 502 });
+    }
     const recommendation: Recommendation = JSON.parse(text);
+    if (!recommendation.size || !recommendation.reason) {
+      return Response.json({ error: "추천 결과를 파싱하지 못했습니다." }, { status: 502 });
+    }
     return Response.json(recommendation);
   } catch {
     return Response.json({ error: "추천에 실패했습니다." }, { status: 502 });

@@ -71,13 +71,15 @@ export function MyClosetClient() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setStatus("success");
+        setErrorMessage(data.error ?? "추천에 실패했습니다. 다시 시도해 주세요.");
+        setStatus("error");
         return;
       }
       setRecommendation(data);
       setStatus("recommended");
     } catch {
-      setStatus("success");
+      setErrorMessage("추천에 실패했습니다. 다시 시도해 주세요.");
+      setStatus("error");
     }
   };
 
@@ -89,7 +91,7 @@ export function MyClosetClient() {
     }
   };
 
-  const hasResult = status === "success" || status === "error" || status === "recommending" || status === "recommended";
+  const hasResult = status === "success" || status === "recommending" || status === "recommended";
 
   return (
     <div className="max-w-lg mx-auto p-4 space-y-4">

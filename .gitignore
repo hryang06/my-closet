@@ -53,3 +53,9 @@ next-env.d.ts
 
 # agent
 .agents/
+
+# Playwright
+node_modules/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

@@ -8,14 +8,13 @@
 | 페이지 구조 | 단일 페이지 (`app/page.tsx`) | 모든 상태가 URL 하나에서 흐름으로 이어짐 |
 | 클라이언트 경계 | `components/my-closet/MyClosetClient.tsx` | URL 입력·로딩·추천 등 전 흐름이 클라이언트 state — page.tsx는 Server Component, 내부 interactive 영역은 `'use client'` |
 | 신체 사이즈 저장 | localStorage (versioned key `bodySize:v1`) | 로그인 없는 개인 도구 — 서버 저장 불필요 |
-| LLM 파싱 | Claude API (`claude-sonnet-4-6`) | HTML → 구조화 JSON 추출 |
+| LLM 파싱 | Gemini API (`gemini-2.0-flash`) | HTML → 구조화 JSON 추출 |
 | LLM 추천 | Gemini API (`gemini-2.0-flash`) | 제품 설명·사이즈 테이블·신체 사이즈 종합 추천 |
 
 ## 인프라 리소스
 
 | 리소스 | 유형 | 선언 위치 | 생성 Task |
 |---|---|---|---|
-| ANTHROPIC_API_KEY | Env var | `.env.local` | Task 1 |
 | GEMINI_API_KEY | Env var | `.env.local` | Task 1 |
 
 ## 데이터 모델
@@ -48,6 +47,8 @@
 | next-best-practices | 2, 4 | RSC boundary, Route Handler 규칙 |
 | shadcn | 2, 3, 4 | Button, Input, Table, Card, Skeleton, FieldGroup·Field |
 | vercel-react-best-practices | 1 | localStorage versioned key, try-catch 패턴 |
+
+> **변경**: 파싱(Task 2) 및 추천(Task 4) 모두 Gemini API(`gemini-2.0-flash`)로 통일. ANTHROPIC_API_KEY 불필요.
 
 ## 영향 받는 파일
 
@@ -84,7 +85,7 @@
   - `types/index.ts` — `BodySize`, `SizeRow`, `ProductInfo`, `Recommendation` 타입 정의
   - `hooks/useBodySize.ts` — `bodySize:v1` 키로 저장·불러오기, `useState` + `useEffect` 패턴
   - `hooks/useBodySize.test.ts`
-  - `.env.local` — `ANTHROPIC_API_KEY`, `GEMINI_API_KEY` 플레이스홀더
+  - `.env.local` — `GEMINI_API_KEY` (이미 설정됨)
 - **수용 기준**:
   - [ ] 키·몸무게·가슴·허리·신발 사이즈 값을 저장하면 `localStorage['bodySize:v1']`에 JSON으로 기록된다
   - [ ] 페이지 재로드(jsdom 재생성) 후 `useBodySize()`가 저장된 값을 반환한다
@@ -102,9 +103,9 @@
 - **참조**:
   - next-best-practices — `rsc-boundaries` (Client Component 선언), `route-handlers`
   - shadcn — Button, Input, Table, Card, Skeleton (`bunx --bun shadcn@latest add` 로 설치)
-  - Claude API 문서: `https://docs.anthropic.com/en/api/messages` (응답 JSON 파싱 구조)
+  - Gemini API 문서: `https://ai.google.dev/gemini-api/docs/text-generation` (REST endpoint)
 - **구현 대상**:
-  - `app/api/parse/route.ts` — `POST /api/parse` body: `{ url }` → fetch HTML → Claude API → `ProductInfo` JSON 반환
+  - `app/api/parse/route.ts` — `POST /api/parse` body: `{ url }` → fetch HTML → Gemini API → `ProductInfo` JSON 반환
   - `components/my-closet/UrlInput.tsx` — URL 입력창 + 조회/지우기 버튼 (`'use client'`)
   - `components/my-closet/UrlInput.test.tsx`
   - `components/my-closet/ProductCard.tsx` — 브랜드·제품명·설명·사이즈 테이블·추천 버튼 표시 (`'use client'`)
