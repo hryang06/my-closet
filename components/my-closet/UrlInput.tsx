@@ -30,7 +30,7 @@ export function UrlInput({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && !isLoading && value.trim() && onFetch()}
         placeholder="의류 제품 URL 붙여넣기"
-        disabled={isLoading || hasResult}
+        disabled={isLoading}
         className="flex-1"
       />
       {showClear ? (

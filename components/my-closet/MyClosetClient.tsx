@@ -1,8 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Shirt, AlertCircle } from "lucide-react";
+import { Shirt, AlertCircle, Ruler } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { UrlInput } from "./UrlInput";
 import { ProductCard } from "./ProductCard";
 import { BodySizeForm } from "./BodySizeForm";
@@ -19,14 +26,14 @@ export function MyClosetClient() {
   const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { bodySize, setBodySize } = useBodySize();
-  const [showBodyForm, setShowBodyForm] = useState(false);
+  const [showBodyDrawer, setShowBodyDrawer] = useState(false);
+  const [openDrawerForRecommend, setOpenDrawerForRecommend] = useState(false);
 
   const handleFetch = async () => {
     setStatus("fetching");
     setProductInfo(null);
     setRecommendation(null);
     setErrorMessage(null);
-    setShowBodyForm(false);
 
     try {
       const res = await fetch("/api/parse", {
@@ -54,13 +61,11 @@ export function MyClosetClient() {
     setProductInfo(null);
     setRecommendation(null);
     setErrorMessage(null);
-    setShowBodyForm(false);
   };
 
   const handleRecommend = async (savedBodySize = bodySize) => {
     if (!savedBodySize || !productInfo) return;
     setStatus("recommending");
-    setShowBodyForm(false);
     setRecommendation(null);
 
     try {
@@ -87,7 +92,22 @@ export function MyClosetClient() {
     if (bodySize) {
       handleRecommend(bodySize);
     } else {
-      setShowBodyForm(true);
+      setOpenDrawerForRecommend(true);
+      setShowBodyDrawer(true);
+    }
+  };
+
+  const handleDrawerOpenChange = (open: boolean) => {
+    setShowBodyDrawer(open);
+    if (!open) setOpenDrawerForRecommend(false);
+  };
+
+  const handleBodySizeSave = (size: Parameters<typeof setBodySize>[0]) => {
+    setBodySize(size);
+    setShowBodyDrawer(false);
+    if (openDrawerForRecommend && productInfo) {
+      setOpenDrawerForRecommend(false);
+      handleRecommend(size);
     }
   };
 
@@ -95,6 +115,18 @@ export function MyClosetClient() {
 
   return (
     <div className="max-w-lg mx-auto p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">My Closet</h1>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowBodyDrawer(true)}
+          aria-label="신체 사이즈 입력"
+        >
+          <Ruler className="size-4" />
+        </Button>
+      </div>
+
       <UrlInput
         value={url}
         onChange={setUrl}
@@ -138,19 +170,8 @@ export function MyClosetClient() {
             onRecommend={handleRecommendClick}
             highlightedSize={recommendation?.size}
             isRecommending={status === "recommending"}
+            hasBodySize={!!bodySize}
           />
-
-          {showBodyForm && (
-            <BodySizeForm
-              initialValues={bodySize ?? undefined}
-              onSave={(size) => {
-                setBodySize(size);
-                setShowBodyForm(false);
-                handleRecommend(size);
-              }}
-              onCancel={() => setShowBodyForm(false)}
-            />
-          )}
 
           {status === "recommending" && (
             <div className="flex items-center gap-2 py-3">
@@ -164,6 +185,21 @@ export function MyClosetClient() {
           )}
         </>
       )}
+
+      <Drawer open={showBodyDrawer} onOpenChange={handleDrawerOpenChange}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>신체 사이즈</DrawerTitle>
+          </DrawerHeader>
+          <div className="overflow-y-auto px-4 pb-4">
+            <BodySizeForm
+              initialValues={bodySize ?? undefined}
+              onSave={handleBodySizeSave}
+              onCancel={() => handleDrawerOpenChange(false)}
+            />
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

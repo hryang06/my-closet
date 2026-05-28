@@ -1,6 +1,7 @@
 "use client";
 
 import { Info } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -17,6 +18,7 @@ interface ProductCardProps {
   onRecommend: () => void;
   highlightedSize?: string;
   isRecommending?: boolean;
+  hasBodySize: boolean;
 }
 
 export function ProductCard({
@@ -24,6 +26,7 @@ export function ProductCard({
   onRecommend,
   highlightedSize,
   isRecommending,
+  hasBodySize,
 }: ProductCardProps) {
   const { brand, name, description, sizeTable } = productInfo;
 
@@ -78,7 +81,7 @@ export function ProductCard({
       <hr className="border-border" />
 
       <Button
-        className="w-full"
+        className={cn("w-full", !hasBodySize && sizeTable && !isRecommending && "opacity-50")}
         onClick={onRecommend}
         disabled={!sizeTable || isRecommending}
       >

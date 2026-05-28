@@ -52,9 +52,7 @@ export function BodySizeForm({ onSave, onCancel, initialValues }: BodySizeFormPr
   };
 
   return (
-    <div className="border rounded-lg p-4 space-y-4 bg-background">
-      <p className="font-semibold text-sm">신체 사이즈 입력</p>
-
+    <div className="space-y-4">
       {FIELDS.map((f) => (
         <div key={f.key} className="space-y-1">
           <Label htmlFor={`bodysize-${f.key}`}>

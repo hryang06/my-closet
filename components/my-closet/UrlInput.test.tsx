@@ -50,9 +50,9 @@ describe("UrlInput", () => {
     expect(screen.getByRole("button", { name: "조회" })).toBeDisabled();
   });
 
-  it("shows disabled input and 지우기 button when hasResult", () => {
+  it("shows enabled input and 지우기 button when hasResult", () => {
     render(<UrlInput {...base} value="https://example.com" hasResult />);
-    expect(screen.getByRole("textbox")).toBeDisabled();
+    expect(screen.getByRole("textbox")).not.toBeDisabled();
     expect(screen.getByRole("button", { name: /지우기/ })).toBeInTheDocument();
   });
 
