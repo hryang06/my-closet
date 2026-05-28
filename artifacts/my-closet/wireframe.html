@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wireframe: My Closet</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root {
+    --w-bg: #f5f5f5;
+    --w-border: #ccc;
+    --w-text: #555;
+    --w-muted: #aaa;
+    --w-fill: #eee;
+  }
+
+  * {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--w-text);
+  }
+
+  body { background: var(--w-bg); }
+
+  nav { position: sticky; top: 0; z-index: 40; background: var(--w-bg); border-bottom: 1px solid var(--w-border); }
+  nav button { cursor: pointer; font-size: 13px; }
+  nav button:hover { background: var(--w-fill); border-radius: 4px; }
+  nav button.active { font-weight: bold; border-bottom: 2px solid var(--w-text); }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .vp-toggle button {
+    font-size: 12px; padding: 2px 8px;
+    border: 1px solid var(--w-border); cursor: pointer; background: white;
+  }
+  .vp-toggle button:first-child { border-radius: 4px 0 0 4px; }
+  .vp-toggle button:last-child { border-radius: 0 4px 4px 0; border-left: none; }
+  .vp-toggle button.active { background: var(--w-text); color: white; }
+
+  body.viewport-mobile .screen-content {
+    max-width: 375px !important;
+    margin: 24px auto !important;
+    border: 2px solid var(--w-border);
+    border-radius: 24px;
+    min-height: 667px;
+    background: white;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 32px 16px !important;
+  }
+
+  .screen-notes {
+    background: #fffde7;
+    border-left: 3px solid #ffd54f;
+    padding: 12px 16px;
+    margin-top: 24px;
+    font-size: 13px;
+    border-radius: 0 4px 4px 0;
+  }
+  .screen-notes summary {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    color: #b0a050;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .screen-notes p { margin: 6px 0 2px; color: #777; }
+  .screen-notes ul { margin: 4px 0 0 16px; padding: 0; color: #777; }
+  .screen-notes li { margin: 2px 0; }
+
+  /* Wireframe component styles — w- prefix, 5 CSS vars only */
+  .w-input {
+    border: 1px solid var(--w-border);
+    padding: 8px 10px;
+    background: white;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .w-input-disabled {
+    border: 1px solid var(--w-border);
+    padding: 8px 10px;
+    background: var(--w-fill);
+    color: var(--w-muted);
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .w-btn {
+    border: 1px solid var(--w-border);
+    padding: 8px 12px;
+    background: var(--w-fill);
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .w-btn-primary {
+    border: 1px solid var(--w-text);
+    padding: 10px 16px;
+    background: var(--w-text);
+    color: white !important;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+    display: block;
+    text-align: center;
+  }
+  .w-btn-disabled {
+    border: 1px solid var(--w-border);
+    padding: 10px 16px;
+    background: var(--w-fill);
+    color: var(--w-muted) !important;
+    font-size: 14px;
+    width: 100%;
+    display: block;
+    text-align: center;
+    cursor: not-allowed;
+  }
+  .w-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .w-table th, .w-table td {
+    border: 1px solid var(--w-border);
+    padding: 6px 8px;
+    text-align: center;
+  }
+  .w-table th {
+    background: var(--w-fill);
+    font-size: 12px;
+  }
+  .w-table tr.highlight td {
+    background: var(--w-fill);
+    font-weight: bold;
+  }
+  .w-divider {
+    border: none;
+    border-top: 1px solid var(--w-border);
+    margin: 14px 0;
+  }
+  .w-alert {
+    border: 1px solid var(--w-border);
+    padding: 10px 12px;
+    background: var(--w-fill);
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .w-panel {
+    border: 1px solid var(--w-border);
+    padding: 16px;
+    background: white;
+  }
+  .w-recommend-box {
+    border: 2px solid var(--w-text);
+    padding: 16px;
+    background: white;
+  }
+  .w-field { margin-bottom: 14px; }
+  .w-label {
+    font-size: 11px;
+    color: var(--w-muted);
+    margin-bottom: 4px;
+    display: block;
+  }
+  .w-spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--w-border);
+    border-top-color: var(--w-text);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .w-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 60px 0;
+    color: var(--w-muted);
+  }
+</style>
+</head>
+<body class="p-0 m-0 viewport-mobile">
+
+<nav class="flex items-center gap-1 px-4 py-2 overflow-x-auto">
+  <span class="text-xs mr-2 shrink-0" style="color:var(--w-muted)">wireframe</span>
+  <button id="nav-0" onclick="show(0)" class="px-2 py-1 shrink-0">초기</button>
+  <button id="nav-1" onclick="show(1)" class="px-2 py-1 shrink-0">조회 로딩</button>
+  <button id="nav-2" onclick="show(2)" class="px-2 py-1 shrink-0">제품 정보</button>
+  <button id="nav-3" onclick="show(3)" class="px-2 py-1 shrink-0">사이즈 없음</button>
+  <button id="nav-4" onclick="show(4)" class="px-2 py-1 shrink-0">에러</button>
+  <button id="nav-5" onclick="show(5)" class="px-2 py-1 shrink-0">신체 입력</button>
+  <button id="nav-6" onclick="show(6)" class="px-2 py-1 shrink-0">추천 로딩</button>
+  <button id="nav-7" onclick="show(7)" class="px-2 py-1 shrink-0">추천 결과</button>
+  <div class="vp-toggle flex ml-auto shrink-0">
+    <button id="vp-desktop" onclick="setViewport('desktop')">Desktop</button>
+    <button id="vp-mobile" onclick="setViewport('mobile')" class="active">Mobile</button>
+  </div>
+</nav>
+
+
+<!-- ── Screen 0: 초기 화면 ── -->
+<div id="screen-0" class="screen" data-scenario="initial">
+  <div class="screen-content @container max-w-6xl mx-auto p-6">
+
+    <h2 class="text-lg font-bold mb-5" style="color:var(--w-muted); border-bottom:1px solid var(--w-border); padding-bottom:8px;">
+      초기 화면 (URL 입력)
+    </h2>
+
+    <!-- URL 입력 -->
+    <div class="flex gap-2 mb-4">
+      <input class="w-input flex-1" placeholder="의류 제품 URL 붙여넣기" readonly />
+      <button class="w-btn" style="color:var(--w-muted); cursor:default;">조회</button>
+    </div>
+
+    <!-- 빈 상태 -->
+    <div class="w-empty-state">
+      <i data-lucide="shirt" style="width:40px;height:40px;color:var(--w-muted);"></i>
+      <p class="text-sm text-center" style="color:var(--w-muted);">URL을 입력하고 조회하면<br>제품 정보와 사이즈를 확인합니다</p>
+    </div>
+
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: 앱 최초 진입 / 지우기 버튼 클릭 후 (시나리오 7)</li>
+          <li>인터랙션: URL 입력 시 조회 버튼 활성 → 클릭 시 로딩 화면으로 전환</li>
+          <li>전환: 조회 버튼 클릭 → 조회 로딩 화면</li>
+        </ul>
+      </details>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ── Screen 1: 조회 로딩 ── -->
+<div id="screen-1" class="screen" data-scenario="loading-fetch">
+  <div class="screen-content @container max-w-6xl mx-auto p-6">
+
+    <h2 class="text-lg font-bold mb-5" style="color:var(--w-muted); border-bottom:1px solid var(--w-border); padding-bottom:8px;">
+      조회 로딩
+    </h2>
+
+    <!-- URL 입력 (비활성) -->
+    <div class="flex gap-2 mb-4">
+      <div class="w-input-disabled flex-1">https://www.musinsa.com/products/4291837</div>
+      <button class="w-btn" style="cursor:default; opacity:0.5;">조회</button>
+    </div>
+
+    <!-- 로딩 인디케이터 -->
+    <div class="w-empty-state">
+      <div class="w-spinner"></div>
+      <p class="text-sm" style="color:var(--w-muted);">제품 정보를 가져오는 중...</p>
+    </div>
+
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: 조회 버튼 클릭 직후</li>
+          <li>인터랙션: URL 입력창·버튼 비활성 / 스피너 표시</li>
+          <li>전환: 파싱 성공(사이즈 있음) → 제품 정보 화면 / 파싱 성공(사이즈 없음) → 사이즈 없음 화면 / 실패 → 에러 화면</li>
+        </ul>
+      </details>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ── Screen 2: 제품 정보 + 사이즈 테이블 ── -->
+<div id="screen-2" class="screen" data-scenario="scenario-1">
+  <div class="screen-content @container max-w-6xl mx-auto p-6">
+
+    <h2 class="text-lg font-bold mb-5" style="color:var(--w-muted); border-bottom:1px solid var(--w-border); padding-bottom:8px;">
+      제품 정보 + 사이즈 테이블
+    </h2>
+
+    <!-- URL 입력 -->
+    <div class="flex gap-2 mb-4">
+      <div class="w-input-disabled flex-1">https://www.musinsa.com/products/4291837</div>
+      <button class="w-btn">
+        <i data-lucide="x" style="width:13px;height:13px;"></i>지우기
+      </button>
+    </div>
+
+    <!-- 제품 헤더 -->
+    <div class="mb-3">
+      <p class="text-xs" style="color:var(--w-muted); margin-bottom:4px;">무신사 스탠다드</p>
+      <p class="font-bold" style="font-size:20px;">오버사이즈 크루넥 스웨트셔츠</p>
+    </div>
+
+    <!-- 제품 설명 -->
+    <div class="mb-3">
+      <p class="text-xs" style="color:var(--w-muted); line-height:1.6;">소프트한 기모 안감으로 따뜻함을 더한 오버사이즈 크루넥 스웨트셔츠. 넉넉한 실루엣으로 레이어드 스타일에 적합하며, 어깨선이 자연스럽게 떨어지는 드롭 숄더 디자인입니다.</p>
+    </div>
+
+    <hr class="w-divider" />
+
+    <!-- 사이즈 테이블 -->
+    <div class="mb-3">
+      <p class="text-xs mb-2" style="color:var(--w-muted);">사이즈 정보 (cm)</p>
+      <table class="w-table">
+        <thead>
+          <tr><th>사이즈</th><th>가슴</th><th>어깨</th><th>총장</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>S</td><td>102</td><td>46</td><td>65</td></tr>
+          <tr><td>M</td><td>106</td><td>48</td><td>67</td></tr>
+          <tr><td>L</td><td>110</td><td>50</td><td>69</td></tr>
+          <tr><td>XL</td><td>114</td><td>52</td><td>71</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="w-divider" />
+
+    <!-- 사이즈 추천 버튼 -->
+    <button class="w-btn-primary">사이즈 추천</button>
+
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: URL 파싱 성공 + 사이즈 테이블 있음</li>
+          <li>인터랙션: 지우기 → 초기 화면 / 추천 버튼(신체 미저장) → 신체 입력 화면 / 추천 버튼(신체 저장됨) → 추천 로딩 화면</li>
+          <li>전환: 지우기 → 초기 / 추천 버튼 → 신체 입력 or 추천 로딩</li>
+        </ul>
+      </details>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ── Screen 3: 사이즈 없는 제품 ── -->
+<div id="screen-3" class="screen" data-scenario="scenario-2">
+  <div class="screen-content @container max-w-6xl mx-auto p-6">
+
+    <h2 class="text-lg font-bold mb-5" style="color:var(--w-muted); border-bottom:1px solid var(--w-border); padding-bottom:8px;">
+      사이즈 없는 제품
+    </h2>
+
+    <!-- URL 입력 -->
+    <div class="flex gap-2 mb-4">
+      <div class="w-input-disabled flex-1">https://www.musinsa.com/products/9876543</div>
+      <button class="w-btn">
+        <i data-lucide="x" style="width:13px;height:13px;"></i>지우기
+      </button>
+    </div>
+
+    <!-- 제품 헤더 -->
+    <div class="mb-3">
+      <p class="text-xs" style="color:var(--w-muted); margin-bottom:4px;">나이키</p>
+      <p class="font-bold" style="font-size:20px;">에어포스 1 07 스니커즈</p>
+    </div>
+
+    <!-- 제품 설명 -->
+    <div class="mb-3">
+      <p class="text-xs" style="color:var(--w-muted); line-height:1.6;">클래식한 로우탑 실루엣의 에어포스 1. 퍼포레이션 디테일과 에어쿠션 중창으로 착화감이 우수하며, 데일리 스타일링에 활용하기 좋은 화이트 컬러웨이입니다.</p>
+    </div>
+
+    <hr class="w-divider" />
+
+    <!-- 사이즈 없음 안내 -->
+    <div class="w-alert mb-3">
+      <i data-lucide="info" style="width:15px;height:15px;flex-shrink:0;margin-top:1px;"></i>
+      <span>사이즈 정보를 찾을 수 없습니다</span>
+    </div>
+
+    <hr class="w-divider" />
+
+    <!-- 추천 버튼 비활성 -->
+    <button class="w-btn-disabled" disabled>사이즈 추천</button>
+
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: URL 파싱 성공 + 사이즈 테이블 없음</li>
+          <li>인터랙션: 추천 버튼 비활성 / 지우기만 가능</li>
+          <li>전환: 지우기 → 초기 화면</li>
+        </ul>
+      </details>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ── Screen 4: 에러 ── -->
+<div id="screen-4" class="screen" data-scenario="scenario-3">
+  <div class="screen-content @container max-w-6xl mx-auto p-6">
+
+    <h2 class="text-lg font-bold mb-5" style="color:var(--w-muted); border-bottom:1px solid var(--w-border); padding-bottom:8px;">
+      에러
+    </h2>
+
+    <!-- URL 입력 -->
+    <div class="flex gap-2 mb-4">
+      <div class="w-input-disabled flex-1">https://blocked-shop.com/product/123</div>
+      <button class="w-btn">
+        <i data-lucide="x" style="width:13px;height:13px;"></i>지우기
+      </button>
+    </div>
+
+    <!-- 에러 메시지 -->
+    <div class="w-alert">
+      <i data-lucide="alert-circle" style="width:15px;height:15px;flex-shrink:0;margin-top:1px;"></i>
+      <span>제품 정보를 가져오지 못했습니다. URL을 확인하거나 다시 시도해 주세요.</span>
+    </div>
+
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: 잘못된 URL 형식 / fetch 실패 (봇 차단 등)</li>
+          <li>인터랙션: 에러 표시 / 제품명·브랜드·사이즈 테이블 없음 / 지우기로 초기화</li>
+          <li>전환: 지우기 → 초기 화면</li>
+        </ul>
+      </details>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ── Screen 5: 신체 사이즈 입력 ── -->
+<div id="screen-5" class="screen" data-scenario="scenario-4, scenario-5">
+  <div class="screen-content @container max-w-6xl mx-auto p-6">
+
+    <h2 class="text-lg font-bold mb-5" style="color:var(--w-muted); border-bottom:1px solid var(--w-border); padding-bottom:8px;">
+      신체 사이즈 입력
+    </h2>
+
+    <!-- URL 입력 (비활성) -->
+    <div class="flex gap-2 mb-4" style="opacity:0.5;">
+      <div class="w-input-disabled flex-1">https://www.musinsa.com/products/4291837</div>
+      <button class="w-btn" style="cursor:default;">지우기</button>
+    </div>
+
+    <!-- 신체 사이즈 입력 패널 -->
+    <div class="w-panel">
+      <p class="font-bold text-sm mb-4">신체 사이즈 입력</p>
+
+      <div class="w-field">
+        <label class="w-label">키 <span style="color:var(--w-muted);">(선택)</span></label>
+        <div class="flex items-center gap-2">
+          <input class="w-input" style="width:100px;" placeholder="170" readonly />
+          <span class="text-sm">cm</span>
+        </div>
+      </div>
+
+      <div class="w-field">
+        <label class="w-label">몸무게 <span style="color:var(--w-muted);">(선택)</span></label>
+        <div class="flex items-center gap-2">
+          <input class="w-input" style="width:100px;" placeholder="65" readonly />
+          <span class="text-sm">kg</span>
+        </div>
+      </div>
+
+      <div class="w-field">
+        <label class="w-label">가슴 둘레 <span style="color:var(--w-muted);">(선택)</span></label>
+        <div class="flex items-center gap-2">
+          <input class="w-input" style="width:100px;" placeholder="90" readonly />
+          <span class="text-sm">cm</span>
+        </div>
+      </div>
+
+      <div class="w-field">
+        <label class="w-label">허리 둘레 <span style="color:var(--w-muted);">(선택)</span></label>
+        <div class="flex items-center gap-2">
+          <input class="w-input" style="width:100px;" placeholder="75" readonly />
+          <span class="text-sm">cm</span>
+        </div>
+      </div>
+
+      <div class="w-field">
+        <label class="w-label">신발 사이즈 <span style="color:var(--w-muted);">(선택)</span></label>
+        <div class="flex items-center gap-2">
+          <input class="w-input" style="width:100px;" placeholder="265" readonly />
+          <span class="text-sm">mm</span>
+        </div>
+      </div>
+
+      <!-- 저장 버튼 — 하나 이상 입력 시 활성 -->
+      <button class="w-btn-disabled" disabled>저장</button>
+      <p class="text-xs mt-2" style="color:var(--w-muted);">하나 이상 입력하면 저장할 수 있습니다</p>
+    </div>
+
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: 추천 버튼 클릭 + 신체 사이즈 미저장 상태 (시나리오 4)</li>
+          <li>인터랙션: 항목 하나 이상 입력 시 저장 버튼 활성 / 저장 클릭 → 브라우저 로컬 저장 후 입력창 닫힘 → 추천 로딩 진행 (시나리오 5)</li>
+          <li>전환: 저장 완료 → 추천 로딩 화면</li>
+        </ul>
+      </details>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ── Screen 6: 추천 로딩 ── -->
+<div id="screen-6" class="screen" data-scenario="scenario-6-loading">
+  <div class="screen-content @container max-w-6xl mx-auto p-6">
+
+    <h2 class="text-lg font-bold mb-5" style="color:var(--w-muted); border-bottom:1px solid var(--w-border); padding-bottom:8px;">
+      추천 로딩
+    </h2>
+
+    <!-- URL 입력 -->
+    <div class="flex gap-2 mb-4">
+      <div class="w-input-disabled flex-1">https://www.musinsa.com/products/4291837</div>
+      <button class="w-btn" style="opacity:0.5;cursor:default;">지우기</button>
+    </div>
+
+    <!-- 제품 헤더 -->
+    <div class="mb-3">
+      <p class="text-xs" style="color:var(--w-muted); margin-bottom:4px;">무신사 스탠다드</p>
+      <p class="font-bold" style="font-size:20px;">오버사이즈 크루넥 스웨트셔츠</p>
+    </div>
+
+    <!-- 제품 설명 -->
+    <div class="mb-3">
+      <p class="text-xs" style="color:var(--w-muted); line-height:1.6;">소프트한 기모 안감으로 따뜻함을 더한 오버사이즈 크루넥 스웨트셔츠. 넉넉한 실루엣으로 레이어드 스타일에 적합하며, 어깨선이 자연스럽게 떨어지는 드롭 숄더 디자인입니다.</p>
+    </div>
+
+    <hr class="w-divider" />
+
+    <!-- 사이즈 테이블 -->
+    <div class="mb-3">
+      <p class="text-xs mb-2" style="color:var(--w-muted);">사이즈 정보 (cm)</p>
+      <table class="w-table">
+        <thead>
+          <tr><th>사이즈</th><th>가슴</th><th>어깨</th><th>총장</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>S</td><td>102</td><td>46</td><td>65</td></tr>
+          <tr><td>M</td><td>106</td><td>48</td><td>67</td></tr>
+          <tr><td>L</td><td>110</td><td>50</td><td>69</td></tr>
+          <tr><td>XL</td><td>114</td><td>52</td><td>71</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="w-divider" />
+
+    <!-- 추천 로딩 인디케이터 -->
+    <div class="flex items-center gap-2" style="padding:12px 0;">
+      <div class="w-spinner"></div>
+      <span class="text-sm" style="color:var(--w-muted);">사이즈 추천 중...</span>
+    </div>
+
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: 추천 버튼 클릭 + 신체 사이즈 저장됨 / 신체 사이즈 저장 직후 자동 진행</li>
+          <li>인터랙션: 추천 진행 중 스피너 표시 / 추천 완료 → 추천 결과 화면으로 자동 전환</li>
+          <li>전환: 추천 완료 → 추천 결과 화면</li>
+        </ul>
+      </details>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ── Screen 7: 추천 결과 ── -->
+<div id="screen-7" class="screen" data-scenario="scenario-6">
+  <div class="screen-content @container max-w-6xl mx-auto p-6">
+
+    <h2 class="text-lg font-bold mb-5" style="color:var(--w-muted); border-bottom:1px solid var(--w-border); padding-bottom:8px;">
+      추천 결과
+    </h2>
+
+    <!-- URL 입력 -->
+    <div class="flex gap-2 mb-4">
+      <div class="w-input-disabled flex-1">https://www.musinsa.com/products/4291837</div>
+      <button class="w-btn">
+        <i data-lucide="x" style="width:13px;height:13px;"></i>지우기
+      </button>
+    </div>
+
+    <!-- 제품 헤더 -->
+    <div class="mb-3">
+      <p class="text-xs" style="color:var(--w-muted); margin-bottom:4px;">무신사 스탠다드</p>
+      <p class="font-bold" style="font-size:20px;">오버사이즈 크루넥 스웨트셔츠</p>
+    </div>
+
+    <!-- 제품 설명 -->
+    <div class="mb-3">
+      <p class="text-xs" style="color:var(--w-muted); line-height:1.6;">소프트한 기모 안감으로 따뜻함을 더한 오버사이즈 크루넥 스웨트셔츠. 넉넉한 실루엣으로 레이어드 스타일에 적합하며, 어깨선이 자연스럽게 떨어지는 드롭 숄더 디자인입니다.</p>
+    </div>
+
+    <hr class="w-divider" />
+
+    <!-- 사이즈 테이블 (추천 행 하이라이트) -->
+    <div class="mb-3">
+      <p class="text-xs mb-2" style="color:var(--w-muted);">사이즈 정보 (cm)</p>
+      <table class="w-table">
+        <thead>
+          <tr><th>사이즈</th><th>가슴</th><th>어깨</th><th>총장</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>S</td><td>102</td><td>46</td><td>65</td></tr>
+          <tr class="highlight"><td>M</td><td>106</td><td>48</td><td>67</td></tr>
+          <tr><td>L</td><td>110</td><td>50</td><td>69</td></tr>
+          <tr><td>XL</td><td>114</td><td>52</td><td>71</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="w-divider" />
+
+    <!-- 추천 결과 박스 -->
+    <div class="w-recommend-box">
+      <div class="flex items-baseline gap-3 mb-3">
+        <span class="text-xs" style="color:var(--w-muted);">추천 사이즈</span>
+        <span class="font-bold" style="font-size:28px;">M</span>
+      </div>
+      <p class="text-sm" style="line-height:1.7; color:var(--w-text);">
+        키 170cm, 몸무게 65kg 기준으로 <strong>M 사이즈</strong>를 추천합니다.
+        가슴 실측(106cm)이 체형에 잘 맞으며, 오버사이즈 핏 특성상 여유 있게 착용하기 적합합니다.
+      </p>
+    </div>
+
+    <div class="screen-notes">
+      <details open>
+        <summary>Notes</summary>
+        <ul>
+          <li>트리거: 추천 API 응답 완료 (시나리오 6)</li>
+          <li>인터랙션: 추천 사이즈 라벨 표시 / 이유 텍스트 표시 / 사이즈 테이블에서 추천 행 하이라이트 / 지우기로 전체 초기화</li>
+          <li>전환: 지우기 → 초기 화면 (시나리오 7)</li>
+        </ul>
+      </details>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+var currentScreen = 0;
+var screenIds = [];
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById('screen-' + id).classList.add('active');
+  document.querySelectorAll('nav button[id^="nav-"]').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('nav-' + id).classList.add('active');
+  currentScreen = screenIds.indexOf(id);
+}
+
+function setViewport(mode) {
+  document.body.classList.remove('viewport-mobile', 'viewport-desktop');
+  document.body.classList.add('viewport-' + mode);
+  document.querySelectorAll('.vp-toggle button').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('vp-' + mode).classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('nav button[id^="nav-"]').forEach(function(b) {
+    screenIds.push(parseInt(b.id.replace('nav-', '')));
+  });
+  var first = document.querySelector('nav button[id^="nav-"]');
+  if (first) first.click();
+  lucide.createIcons();
+});
+</script>
+</body>
+</html>
