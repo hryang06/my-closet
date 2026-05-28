@@ -1,7 +1,7 @@
 import type { ProductInfo, BodySize, Recommendation } from "@/types";
 
 const GEMINI_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 function buildPrompt(productInfo: ProductInfo, bodySize: BodySize): string {
   const bodySizeText = [
@@ -71,7 +71,10 @@ export async function POST(request: Request) {
     });
 
     if (!geminiRes.ok) {
-      return Response.json({ error: "추천에 실패했습니다." }, { status: 502 });
+      const errMsg = geminiRes.status === 429
+        ? "AI 요청 한도를 초과했습니다. 잠시 후 다시 시도해 주세요."
+        : `추천에 실패했습니다. (${geminiRes.status})`;
+      return Response.json({ error: errMsg }, { status: 502 });
     }
 
     const geminiData = await geminiRes.json();
