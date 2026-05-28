@@ -1,5 +1,5 @@
-import { ComponentExample } from "@/components/component-example";
+import { MyClosetClient } from "@/components/my-closet/MyClosetClient";
 
 export default function Page() {
-return <ComponentExample />;
+  return <MyClosetClient />;
 }
