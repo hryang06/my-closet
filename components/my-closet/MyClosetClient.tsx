@@ -168,7 +168,7 @@ export function MyClosetClient() {
           <ProductCard
             productInfo={productInfo}
             onRecommend={handleRecommendClick}
-            highlightedSize={recommendation?.size}
+            highlightedSize={recommendation?.size ?? undefined}
             isRecommending={status === "recommending"}
             hasBodySize={!!bodySize}
           />
