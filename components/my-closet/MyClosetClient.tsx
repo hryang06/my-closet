@@ -5,6 +5,7 @@ import { Shirt, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UrlInput } from "./UrlInput";
 import { ProductCard } from "./ProductCard";
+import { BodySizeForm } from "./BodySizeForm";
 import type { ProductInfo, Recommendation } from "@/types";
 import { useBodySize } from "@/hooks/useBodySize";
 
@@ -137,7 +138,8 @@ export function MyClosetClient() {
           />
 
           {showBodyForm && (
-            <BodySizeFormPlaceholder
+            <BodySizeForm
+              initialValues={bodySize ?? undefined}
               onSave={(size) => {
                 setBodySize(size);
                 setShowBodyForm(false);
@@ -161,17 +163,6 @@ export function MyClosetClient() {
       )}
     </div>
   );
-}
-
-// Task 3에서 실제 구현으로 교체될 플레이스홀더
-function BodySizeFormPlaceholder({
-  onSave,
-  onCancel,
-}: {
-  onSave: (size: import("@/types").BodySize) => void;
-  onCancel: () => void;
-}) {
-  return null;
 }
 
 // Task 4에서 실제 구현으로 교체될 플레이스홀더
