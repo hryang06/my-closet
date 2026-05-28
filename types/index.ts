@@ -19,6 +19,6 @@ export interface ProductInfo {
 }
 
 export interface Recommendation {
-  size: string;
+  size: string | null;
   reason: string;
 }

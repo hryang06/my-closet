@@ -53,21 +53,24 @@ export function ProductCard({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sizeTable.rows.map((row) => (
-                <TableRow
-                  key={row.label}
-                  className={
-                    highlightedSize === row.label ? "bg-muted font-bold" : ""
-                  }
-                >
-                  <TableCell className="text-center">{row.label}</TableCell>
-                  {sizeTable.headers.slice(1).map((h) => (
-                    <TableCell key={h} className="text-center">
-                      {row.measurements[h]}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
+              {sizeTable.rows.map((row) => {
+                const label = !row.label && sizeTable.rows.length === 1 ? "ONE size" : row.label;
+                return (
+                  <TableRow
+                    key={label || row.label}
+                    className={
+                      highlightedSize === label ? "bg-muted font-bold" : ""
+                    }
+                  >
+                    <TableCell className="text-center">{label}</TableCell>
+                    {sizeTable.headers.slice(1).map((h) => (
+                      <TableCell key={h} className="text-center">
+                        {row.measurements[h]}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

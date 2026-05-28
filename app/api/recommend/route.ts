@@ -14,14 +14,17 @@ function buildPrompt(productInfo: ProductInfo, bodySize: BodySize): string {
     .filter(Boolean)
     .join(", ");
 
+  const rows = productInfo.sizeTable?.rows ?? [];
+  const isOneSize = rows.length === 1 && !rows[0].label;
+
   const sizeTableText = productInfo.sizeTable
-    ? `사이즈 테이블:\n${productInfo.sizeTable.rows
-        .map(
-          (row) =>
-            `${row.label}: ${Object.entries(row.measurements)
-              .map(([k, v]) => `${k}=${v}cm`)
-              .join(", ")}`
-        )
+    ? `사이즈 테이블:\n${rows
+        .map((row) => {
+          const label = isOneSize ? "ONE size" : row.label;
+          return `${label}: ${Object.entries(row.measurements)
+            .map(([k, v]) => `${k}=${v}cm`)
+            .join(", ")}`;
+        })
         .join("\n")}`
     : "사이즈 테이블 없음";
 
@@ -33,12 +36,15 @@ ${sizeTableText}
 
 신체 사이즈: ${bodySizeText}
 
-중요: size 필드에는 위 사이즈 테이블의 label 값(예: S, M, L, XL)을 정확히 그대로 사용하라.
+중요:
+- size 필드에는 위 사이즈 테이블의 label 값(예: S, M, L, XL)을 정확히 그대로 사용하라.
+- 신체 사이즈 정보가 부족해 정확히 판단하기 어렵더라도, 제공된 정보를 최대한 활용해 가장 적합할 것으로 보이는 사이즈를 추천하라.
+- 제공된 신체 사이즈를 기반으로 판단했을 때 사이즈 테이블의 어떤 사이즈도 맞지 않는다고 판단되면 size를 null로 설정하라.
 
 JSON 형식으로만 반환 (다른 텍스트 없이):
 {
-  "size": "추천 사이즈 라벨 (사이즈 테이블의 label과 동일하게)",
-  "reason": "추천 이유 (2~3문장, 신체 사이즈와 제품 사이즈 수치를 근거로 포함)"
+  "size": "추천 사이즈 라벨 (사이즈 테이블의 label과 동일하게) 또는 null",
+  "reason": "추천 이유 또는 추천하지 못하는 이유 (2~3문장, 신체 사이즈와 제품 사이즈 수치를 근거로 포함)"
 }`;
 }
 
@@ -83,7 +89,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "AI가 응답하지 않았습니다." }, { status: 502 });
     }
     const recommendation: Recommendation = JSON.parse(text);
-    if (!recommendation.size || !recommendation.reason) {
+    if (recommendation.size === undefined || !recommendation.reason) {
       return Response.json({ error: "추천 결과를 파싱하지 못했습니다." }, { status: 502 });
     }
     return Response.json(recommendation);
