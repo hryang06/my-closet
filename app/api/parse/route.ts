@@ -1,5 +1,5 @@
 import type { ProductInfo } from "@/types";
-import { parseFromJsonLd, parseSizeTableFromHtml } from "@/lib/parse-product";
+import { parseFromJsonLd, parseSizeFromHtml } from "@/lib/parse-product";
 
 // ─── Gemini 폴백 ─────────────────────────────────────────────────────────────
 
@@ -179,7 +179,7 @@ export async function POST(request: Request) {
   // 1단계: JSON-LD + HTML 테이블 규칙 기반 파싱 (Gemini 호출 없음)
   const jsonLdInfo = parseFromJsonLd(html);
   if (jsonLdInfo?.name) {
-    const sizeTable = parseSizeTableFromHtml(html);
+    const sizeTable = parseSizeFromHtml(html);
     return Response.json({ ...jsonLdInfo, sizeTable } satisfies ProductInfo);
   }
 

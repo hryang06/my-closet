@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseFromJsonLd, parseSizeTableFromHtml } from "./parse-product";
+import { parseFromJsonLd, parseSizeFromHtml } from "./parse-product";
 
 // ─── parseFromJsonLd ─────────────────────────────────────────────────────────
 
@@ -76,9 +76,9 @@ describe("parseFromJsonLd", () => {
   });
 });
 
-// ─── parseSizeTableFromHtml ──────────────────────────────────────────────────
+// ─── parseSizeFromHtml (테이블 파싱) ─────────────────────────────────────────
 
-describe("parseSizeTableFromHtml", () => {
+describe("parseSizeFromHtml - 테이블", () => {
   it("사이즈 테이블을 올바르게 파싱", () => {
     const html = `
       <table>
@@ -88,7 +88,7 @@ describe("parseSizeTableFromHtml", () => {
         <tr><td>L</td><td>46</td><td>102</td></tr>
       </table>
     `;
-    const result = parseSizeTableFromHtml(html);
+    const result = parseSizeFromHtml(html);
     expect(result).toEqual({
       headers: ["사이즈", "어깨너비", "가슴둘레"],
       rows: [
@@ -107,7 +107,7 @@ describe("parseSizeTableFromHtml", () => {
         <tr><td>95</td><td>67</td><td>100</td></tr>
       </table>
     `;
-    const result = parseSizeTableFromHtml(html);
+    const result = parseSizeFromHtml(html);
     expect(result?.rows[0].label).toBe("90");
     expect(result?.rows[0].measurements["총장"]).toBe(65);
   });
@@ -119,7 +119,7 @@ describe("parseSizeTableFromHtml", () => {
         <tr><td>FREE SIZE</td><td>48</td><td>108</td></tr>
       </table>
     `;
-    expect(parseSizeTableFromHtml(html)?.rows[0].label).toBe("FREE SIZE");
+    expect(parseSizeFromHtml(html)?.rows[0].label).toBe("FREE SIZE");
   });
 
   it("숫자 없는 테이블은 null 반환", () => {
@@ -129,7 +129,7 @@ describe("parseSizeTableFromHtml", () => {
         <tr><td>소재</td><td>면 100%</td></tr>
       </table>
     `;
-    expect(parseSizeTableFromHtml(html)).toBeNull();
+    expect(parseSizeFromHtml(html)).toBeNull();
   });
 
   it("사이즈 레이블 없는 테이블은 null 반환", () => {
@@ -140,11 +140,11 @@ describe("parseSizeTableFromHtml", () => {
         <tr><td>길이</td><td>150</td></tr>
       </table>
     `;
-    expect(parseSizeTableFromHtml(html)).toBeNull();
+    expect(parseSizeFromHtml(html)).toBeNull();
   });
 
   it("테이블 없으면 null 반환", () => {
-    expect(parseSizeTableFromHtml("<div>테이블 없음</div>")).toBeNull();
+    expect(parseSizeFromHtml("<div>테이블 없음</div>")).toBeNull();
   });
 
   it("여러 테이블 중 사이즈 테이블만 선택", () => {
@@ -159,7 +159,7 @@ describe("parseSizeTableFromHtml", () => {
         <tr><td>L</td><td>72</td></tr>
       </table>
     `;
-    const result = parseSizeTableFromHtml(html);
+    const result = parseSizeFromHtml(html);
     expect(result?.rows[0].label).toBe("M");
   });
 
@@ -170,8 +170,42 @@ describe("parseSizeTableFromHtml", () => {
         <tr><td><strong>S</strong></td><td><span>42</span></td></tr>
       </table>
     `;
-    const result = parseSizeTableFromHtml(html);
+    const result = parseSizeFromHtml(html);
     expect(result?.rows[0].label).toBe("S");
     expect(result?.rows[0].measurements["어깨"]).toBe(42);
+  });
+});
+
+// ─── parseSizeFromHtml (통합: 테이블 우선, 인라인 텍스트 폴백) ───────────────
+
+describe("parseSizeFromHtml", () => {
+  it("인라인 텍스트 사이즈 정보 추출 (tannat.kr 패턴)", () => {
+    const html = `
+      <div>SIZE GUIDE 총장 55.2cm 어깨 39cm 가슴 40cm 암홀 19.6cm 소매 60.5cm 소매 단 11.5cm 밑단 40.1cm</div>
+    `;
+    const result = parseSizeFromHtml(html);
+    expect(result).not.toBeNull();
+    expect(result?.rows[0].label).toBe("FREE");
+    expect(result?.rows[0].measurements["총장"]).toBe(55.2);
+    expect(result?.rows[0].measurements["어깨"]).toBe(39);
+    expect(result?.rows[0].measurements["소매 단"]).toBe(11.5);
+    expect(result?.rows[0].measurements["소매"]).toBe(60.5);
+  });
+
+  it("테이블이 있으면 테이블 우선", () => {
+    const html = `
+      <div>총장 55cm 어깨 39cm 가슴 40cm</div>
+      <table>
+        <tr><th>사이즈</th><th>총장</th></tr>
+        <tr><td>M</td><td>70</td></tr>
+      </table>
+    `;
+    const result = parseSizeFromHtml(html);
+    expect(result?.rows[0].label).toBe("M");
+  });
+
+  it("3개 미만 측정값이면 null 반환", () => {
+    const html = `<div>총장 55cm 어깨 39cm</div>`;
+    expect(parseSizeFromHtml(html)).toBeNull();
   });
 });

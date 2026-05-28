@@ -95,10 +95,53 @@ function parseHtmlTable(tableHtml: string): NonNullable<ProductInfo["sizeTable"]
   return { headers, rows: sizeRows };
 }
 
-export function parseSizeTableFromHtml(html: string): ProductInfo["sizeTable"] {
+function parseSizeTableFromHtml(html: string): ProductInfo["sizeTable"] {
   for (const match of html.matchAll(/<table[\s\S]*?<\/table>/gi)) {
     const parsed = parseHtmlTable(match[0]);
     if (parsed) return parsed;
   }
   return null;
+}
+
+// ─── 인라인 텍스트 사이즈 파싱 ───────────────────────────────────────────────
+// "총장 55.2cm 어깨 39cm ..." 형식의 텍스트에서 측정값 추출
+
+const TEXT_SIZE_KEYWORDS = [
+  "소매 단", "소매단", "총장", "어깨너비", "어깨", "가슴둘레", "가슴",
+  "암홀", "허리둘레", "허리", "힙둘레", "힙", "밑위", "허벅지",
+  "무릎", "밑단", "넥", "소매",
+];
+
+function parseSizeTextFromHtml(html: string): ProductInfo["sizeTable"] {
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // 긴 키워드부터 매칭하여 부분 일치 방지 (e.g. "소매 단" > "소매")
+  const keyPattern = TEXT_SIZE_KEYWORDS.sort((a, b) => b.length - a.length).join("|");
+  const re = new RegExp(`(${keyPattern})\\s+(\\d+\\.?\\d*)\\s*(?:cm|mm)?`, "gi");
+
+  const measurements: Record<string, number> = {};
+  for (const m of text.matchAll(re)) {
+    const key = m[1].trim();
+    if (!(key in measurements)) {
+      measurements[key] = parseFloat(m[2]);
+    }
+  }
+
+  if (Object.keys(measurements).length < 3) return null;
+
+  return {
+    headers: ["사이즈", ...Object.keys(measurements)],
+    rows: [{ label: "FREE", measurements }],
+  };
+}
+
+export function parseSizeFromHtml(html: string): ProductInfo["sizeTable"] {
+  return parseSizeTableFromHtml(html) ?? parseSizeTextFromHtml(html);
 }
