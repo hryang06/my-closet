@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { UrlInput } from "./UrlInput";
 import { ProductCard } from "./ProductCard";
 import { BodySizeForm } from "./BodySizeForm";
+import { RecommendationResult } from "./RecommendationResult";
 import type { ProductInfo, Recommendation } from "@/types";
 import { useBodySize } from "@/hooks/useBodySize";
 
@@ -157,19 +158,10 @@ export function MyClosetClient() {
           )}
 
           {status === "recommended" && recommendation && (
-            <RecommendationPlaceholder recommendation={recommendation} />
+            <RecommendationResult recommendation={recommendation} />
           )}
         </>
       )}
     </div>
   );
-}
-
-// Task 4에서 실제 구현으로 교체될 플레이스홀더
-function RecommendationPlaceholder({
-  recommendation,
-}: {
-  recommendation: Recommendation;
-}) {
-  return null;
 }
